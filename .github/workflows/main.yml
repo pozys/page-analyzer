@@ -1,0 +1,19 @@
+name: main-workflow
+
+on: push
+jobs:
+  checkout-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: make install
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+
+      - name: Run lint
+        run: make lint
