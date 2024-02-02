@@ -14,7 +14,7 @@ class Url
     public static function rules(): array
     {
         return [
-            'required' => 'name',
+            'required' => ['name'],
             'lengthMax' => [['name', 255]],
             'url' => ['name'],
         ];

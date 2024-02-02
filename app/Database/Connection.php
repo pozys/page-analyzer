@@ -53,7 +53,7 @@ class Connection
         $user = $databaseUrl['user'];
         $password = $databaseUrl['pass'];
         $host = $databaseUrl['host'];
-        $port = $databaseUrl['port'];
+        $port = $databaseUrl['port'] ?? 5432;
         $database = ltrim($databaseUrl['path'], '/');
 
         return compact('user', 'password', 'host', 'port', 'database');

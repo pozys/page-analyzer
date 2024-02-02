@@ -1,7 +1,6 @@
 <?php
 
 use App\Database\Connection;
-use App\Database\PostgresDML;
 use App\Models\Url;
 use App\Repositories\UrlRepository;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -24,11 +23,10 @@ $app->addErrorMiddleware(true, true, true);
 $router = $app->getRouteCollector()->getRouteParser();
 
 $app->get('/', function (Request $request, Response $response) {
-    $params = ['hello' => 'Hello!'];
     $renderer = $this->get('renderer');
     $renderer->setLayout("layout.php");
 
-    return $renderer->render($response, 'index.phtml', $params);
+    return $renderer->render($response, 'index.phtml');
 });
 
 $app->get('/urls', function (Request $request, Response $response) {
@@ -46,7 +44,7 @@ $app->get('/urls', function (Request $request, Response $response) {
 $app->post('/urls', function (Request $request, Response $response) use ($router) {
     try {
         $urlData = $request->getParsedBodyParam('url');
-        $urlData['name'] = parse_url($urlData['name'], PHP_URL_HOST);
+
         $validator = new Validator($urlData);
         $validator->rules(Url::rules());
 
@@ -58,7 +56,7 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
         }
 
         $repo = new UrlRepository($this->get('pdo'));
-        $id = $repo->insertUrl($urlData);
+        $repo->insertUrl($urlData);
     } catch (\PDOException $e) {
         echo $e->getMessage();
     }

@@ -26,7 +26,11 @@ class UrlRepository
         $sql = "INSERT INTO {$this->getTableName()}(name, created_at) VALUES(:name, :date)";
         $stmt = $this->connection->prepare($sql);
 
-        $stmt->bindValue(':name', $url['name']);
+        $urlParsed = parse_url($url['name']);
+        $scheme = $urlParsed['scheme'];
+        $host = $urlParsed['host'];
+
+        $stmt->bindValue(':name', "{$scheme}://{$host}");
         $stmt->bindValue(':date', Carbon::now());
 
         $stmt->execute();
