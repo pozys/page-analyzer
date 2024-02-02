@@ -7,3 +7,12 @@ lint:
 
 install:
 	composer install
+
+db-start:
+	sudo service postgresql start
+
+db-status:
+	sudo service postgresql status
+
+db-stop:
+	sudo service postgresql stop
