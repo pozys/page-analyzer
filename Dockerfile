@@ -13,4 +13,6 @@ COPY . .
 
 RUN composer install
 
+RUN psql -a -d $DATABASE_URL -f database.sql
+
 CMD ["bash", "-c", "make start"]
