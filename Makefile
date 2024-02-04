@@ -1,4 +1,5 @@
 PORT ?= 8000
+DATABASE_URL ?= pozys
 start:
 	psql -a -d $(DATABASE_URL) -f database.sql && PHP_CLI_SERVER_WORKERS=5 php -S 0.0.0.0:$(PORT) -t public 
 

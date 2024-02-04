@@ -19,4 +19,12 @@ class Url
             'url' => ['name'],
         ];
     }
+
+    public static function getName(array $data): string
+    {
+        $scheme = $data['scheme'] ?? '';
+        $host = $data['host'] ?? '';
+
+        return "{$scheme}://{$host}";
+    }
 }

@@ -7,6 +7,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use DI\Container;
+use Slim\Flash\Messages;
 use Valitron\Validator;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -15,9 +16,28 @@ $container = new Container();
 $container->set('renderer', function () {
     return new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
 });
+
 $container->set('pdo', fn () => (new Connection())->get()->connect());
 
+$container->set('flash', function () {
+    $storage = [];
+    return new Messages($storage);
+});
+
 $app = AppFactory::createFromContainer($container);
+
+$app->add(
+    function ($request, $next) {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        $this->get('flash')->__construct($_SESSION);
+
+        return $next->handle($request);
+    }
+);
+
 $app->addErrorMiddleware(true, true, true);
 
 $router = $app->getRouteCollector()->getRouteParser();
@@ -28,6 +48,21 @@ $app->get('/', function (Request $request, Response $response) {
 
     return $renderer->render($response, 'index.phtml');
 });
+
+$app->get('/urls/{id}', function (Request $request, Response $response, array $args) {
+    $repo = new UrlRepository($this->get('pdo'));
+
+    $url = $repo->getUrl($args['id']);
+
+    $renderer = $this->get('renderer');
+    $renderer->setLayout("layout.php");
+
+    $flash = $this->get('flash')->getMessages();
+
+    $params = compact('url', 'flash');
+
+    return $renderer->render($response, 'urls/show.phtml', $params);
+})->setName('urls.show');
 
 $app->get('/urls', function (Request $request, Response $response) {
     $repo = new UrlRepository($this->get('pdo'));
@@ -43,9 +78,9 @@ $app->get('/urls', function (Request $request, Response $response) {
 
 $app->post('/urls', function (Request $request, Response $response) use ($router) {
     try {
-        $urlData = $request->getParsedBodyParam('url');
+        $url = $request->getParsedBodyParam('url');
 
-        $validator = new Validator($urlData);
+        $validator = new Validator($url);
         $validator->rules(Url::rules());
 
         if ($validator->validate()) {
@@ -56,12 +91,23 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
         }
 
         $repo = new UrlRepository($this->get('pdo'));
-        $repo->insertUrl($urlData);
+
+        $name = Url::getName(parse_url($url['name']));
+        $id = $repo->findByField('name', $name)->first()['id'] ?? null;
+
+        $message = 'Страница уже существует';
+
+        if ($id === null) {
+            $id = $repo->insertUrl($url);
+            $message = 'Страница успешно добавлена';
+        }
+
+        $this->get('flash')->addMessage('success', $message);
     } catch (\PDOException $e) {
         echo $e->getMessage();
     }
 
-    return $response->withRedirect($router->urlFor('urls.index'));
+    return $response->withRedirect($router->urlFor('urls.show', compact('id')));
 });
 
 $app->run();
