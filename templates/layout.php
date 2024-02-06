@@ -49,7 +49,7 @@
         </div>
     <?php endif; ?>
 
-    <?php if (array_key_exists('error', $flash)]) : ?>
+    <?php if (array_key_exists('error', $flash)) : ?>
         <div class="alert alert-danger" role="alert">
             <?php foreach ($flash['error'] as $message) {
                 echo $message . '<br>';
