@@ -31,7 +31,7 @@
         </nav>
     </header>
 
-    <?php if (array_key_exists('success', $flash)) : ?>
+    <?php if (array_key_exists('success', $flash ?? [])) : ?>
         <div class="alert alert-success" role="alert">
             <?php foreach ($flash['success'] as $message) {
                 echo $message . '<br>';
@@ -40,7 +40,7 @@
         </div>
     <?php endif; ?>
 
-    <?php if (array_key_exists('warning', $flash)) : ?>
+    <?php if (array_key_exists('warning', $flash ?? [])) : ?>
         <div class="alert alert-warning" role="alert">
             <?php foreach ($flash['warning'] as $message) {
                 echo $message . '<br>';
@@ -49,7 +49,7 @@
         </div>
     <?php endif; ?>
 
-    <?php if (array_key_exists('error', $flash)) : ?>
+    <?php if (array_key_exists('error', $flash ?? [])) : ?>
         <div class="alert alert-danger" role="alert">
             <?php foreach ($flash['error'] as $message) {
                 echo $message . '<br>';
