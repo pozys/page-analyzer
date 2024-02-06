@@ -46,13 +46,17 @@ $app->get('/', function (Request $request, Response $response) {
     $renderer = $this->get('renderer');
     $renderer->setLayout("layout.php");
 
-    return $renderer->render($response, 'index.phtml');
-});
+    $flash = $this->get('flash')->getMessages();
+
+    $params = compact('flash');
+
+    return $renderer->render($response, 'index.phtml', $params);
+})->setName('home');
 
 $app->get('/urls/{id}', function (Request $request, Response $response, array $args) {
     $repo = new UrlRepository($this->get('pdo'));
 
-    $url = $repo->getUrl($args['id']);
+    $url = $repo->getUrlById($args['id']);
 
     $renderer = $this->get('renderer');
     $renderer->setLayout("layout.php");
@@ -66,7 +70,7 @@ $app->get('/urls/{id}', function (Request $request, Response $response, array $a
 
 $app->get('/urls', function (Request $request, Response $response) {
     $repo = new UrlRepository($this->get('pdo'));
-    $urls = $repo->list();
+    $urls = $repo->listUrls();
 
     $renderer = $this->get('renderer');
     $renderer->setLayout("layout.php");
@@ -77,35 +81,36 @@ $app->get('/urls', function (Request $request, Response $response) {
 })->setName('urls.index');
 
 $app->post('/urls', function (Request $request, Response $response) use ($router) {
+    $url = $request->getParsedBodyParam('url');
+
+    $validator = new Validator($url);
+    $validator->rules(Url::rules());
+
+    if (!$validator->validate()) {
+        $this->get('flash')->addMessage('validation', $validator->errors());
+
+        return $response->withRedirect($router->urlFor('home'));
+    }
+
     try {
-        $url = $request->getParsedBodyParam('url');
-
-        $validator = new Validator($url);
-        $validator->rules(Url::rules());
-
-        if ($validator->validate()) {
-            echo "Yay! We're all good!";
-        } else {
-            dump($validator->errors());
-            die;
-        }
-
         $repo = new UrlRepository($this->get('pdo'));
 
         $name = Url::getName(parse_url($url['name']));
-        $id = $repo->findByField('name', $name)->first()['id'] ?? null;
-
-        $message = 'Страница уже существует';
-
-        if ($id === null) {
-            $id = $repo->insertUrl($url);
-            $message = 'Страница успешно добавлена';
-        }
-
-        $this->get('flash')->addMessage('success', $message);
+        $id = $repo->firstByField('name', $name)['id'] ?? null;
     } catch (\PDOException $e) {
-        echo $e->getMessage();
+        $this->get('flash')->addMessage('error', $e->getMessage());
+
+        return $response->withRedirect($router->urlFor('home'));
     }
+
+    $message = 'Страница уже существует';
+
+    if ($id === null) {
+        $id = $repo->insertUrl($url);
+        $message = 'Страница успешно добавлена';
+    }
+
+    $this->get('flash')->addMessage('success', $message);
 
     return $response->withRedirect($router->urlFor('urls.show', compact('id')));
 });

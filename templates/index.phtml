@@ -7,14 +7,20 @@
                 <form action="/urls" method="post" class="row" required="">
                     <div class="col-8">
                         <input type="text" name="url[name]" value="" class="form-control form-control-lg" placeholder="https://www.example.com">
+                        <?php if (count(array_column($flash['validation'] ?? [], 'name')) > 0) : ?>
+                            <div>
+                                <?php foreach (array_column($flash['validation'], 'name') as $messages) {
+                                    echo implode('<br>', $messages) . '<br>';
+                                } ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <div class="col-2">
                         <input type="submit" class="btn btn-primary btn-lg ms-3 px-5 text-uppercase mx-3" value="Проверить">
                     </div>
-
-                </form>
-
             </div>
+            </form>
         </div>
+    </div>
     </div>
 </main>
