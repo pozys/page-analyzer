@@ -31,6 +31,33 @@
         </nav>
     </header>
 
+    <?php if ($flash['success']) : ?>
+        <div class="alert alert-success" role="alert">
+            <?php foreach ($flash['success'] as $message) {
+                echo $message . '<br>';
+            }
+            ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($flash['warning']) : ?>
+        <div class="alert alert-warning" role="alert">
+            <?php foreach ($flash['warning'] as $message) {
+                echo $message . '<br>';
+            }
+            ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($flash['error']) : ?>
+        <div class="alert alert-danger" role="alert">
+            <?php foreach ($flash['error'] as $message) {
+                echo $message . '<br>';
+            }
+            ?>
+        </div>
+    <?php endif; ?>
+
     <?= $content ?>
     <footer class="border-top py-3 mt-5 flex-shrink-0">
         <div class="container-lg">
