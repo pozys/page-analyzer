@@ -2,24 +2,40 @@
 
 namespace App\Repositories;
 
-use App\Models\Url;
+use App\Models\{Url, UrlCheck};
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use PDO;
-use PDOStatement;
 
-class UrlRepository
+class UrlRepository extends AbstractRepository
 {
-    private PDOStatement $statement;
-
-    public function __construct(private PDO $connection, private string $model = Url::class)
+    public function model(): string
     {
+        return Url::class;
     }
 
-    public function listUrls(): PDOStatement
+    public function listUrls(): array
     {
-        $sql = "SELECT * FROM {$this->getTableName()} ORDER BY created_at DESC";
+        $urlTable = $this->getTableName();
+        $urlTableAlias = $urlTable . '_alias';
+        $checksTable = UrlCheck::getTableName();
+        $checksTableAlias = $checksTable . '_alias';
+        $checkDateColumn = 'check_date';
 
-        return $this->connection->query($sql);
+        $sql = "SELECT {$urlTableAlias}.*,
+        {$checksTableAlias}.created_at AS $checkDateColumn
+        FROM $urlTable AS $urlTableAlias
+        LEFT JOIN $checksTable AS $checksTableAlias
+        ON {$urlTableAlias}.id = {$checksTableAlias}.url_id";
+
+        $rows = $this->connection->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+        return collect($rows)->groupBy('id')
+            ->map(
+                fn (Collection $urlData) => $urlData->sortByDesc($checkDateColumn)->first() ?? []
+            )
+            ->sortByDesc('created_at')
+            ->all();
     }
 
     public function insertUrl(array $urlData): int
@@ -38,30 +54,8 @@ class UrlRepository
         return $this->connection->lastInsertId();
     }
 
-    public function getUrlById(int $id): array
+    public function getUrlById(int $id): ?array
     {
         return $this->firstByField('id', $id);
-    }
-
-    public function firstByField(string $field, mixed $value): ?array
-    {
-        $result = $this->findByField($field, $value)->fetch(PDO::FETCH_ASSOC);
-
-        return $result === false ? null : $result;
-    }
-
-    private function findByField(string $field, mixed $value): PDOStatement
-    {
-        $sql = "SELECT * FROM {$this->getTableName()} WHERE $field = :{$field}";
-        $this->statement = $this->connection->prepare($sql);
-        $this->statement->bindValue(":{$field}", $value);
-        $this->statement->execute();
-
-        return $this->statement;
-    }
-
-    private function getTableName(): string
-    {
-        return $this->model::getTableName();
     }
 }

@@ -2,7 +2,7 @@
 
 use App\Database\Connection;
 use App\Models\Url;
-use App\Repositories\UrlRepository;
+use App\Repositories\{UrlCheckRepository, UrlRepository};
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -53,17 +53,28 @@ $app->get('/', function (Request $request, Response $response) {
     return $renderer->render($response, 'index.phtml', $params);
 })->setName('home');
 
-$app->get('/urls/{id}', function (Request $request, Response $response, array $args) {
-    $repo = new UrlRepository($this->get('pdo'));
+$app->get('/urls/{id:[0-9]+}', function (Request $request, Response $response, array $args) use ($router) {
+    $urlRepo = new UrlRepository($this->get('pdo'));
 
-    $url = $repo->getUrlById($args['id']);
+    $url = $urlRepo->getUrlById($args['id']);
+
+    if ($url === null) {
+        $this->get('flash')->addMessage('warning', "Url with id {$args['id']} not found");
+
+        return $response->withRedirect($router->urlFor('home'));
+    }
 
     $renderer = $this->get('renderer');
     $renderer->setLayout("layout.php");
 
     $flash = $this->get('flash')->getMessages();
 
-    $params = compact('url', 'flash');
+    $checkRepo = new UrlCheckRepository($this->get('pdo'));
+    $checks = $checkRepo->checksByUrl($url['id']);
+
+    $checkPath = $router->urlFor('urls.checks', ['url_id' => $url['id']]);
+
+    $params = compact('url', 'flash', 'checks', 'checkPath');
 
     return $renderer->render($response, 'urls/show.phtml', $params);
 })->setName('urls.show');
@@ -114,5 +125,19 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
 
     return $response->withRedirect($router->urlFor('urls.show', compact('id')));
 });
+
+$app->post('/urls/{url_id:[0-9]+}/checks', function (Request $request, Response $response, array $args) use ($router) {
+    try {
+        $repo = new UrlCheckRepository($this->get('pdo'));
+
+        $repo->insertCheck($args['url_id']);
+
+        $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+    } catch (\PDOException $e) {
+        $this->get('flash')->addMessage('error', $e->getMessage());
+    }
+
+    return $response->withRedirect($router->urlFor('urls.show', ['id' => $args['url_id']]));
+})->setName('urls.checks');
 
 $app->run();

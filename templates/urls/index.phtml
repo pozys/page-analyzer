@@ -18,7 +18,9 @@
                             <td>
                                 <a href="/urls/<?= $url['id'] ?>"><?= $url['name'] ?></a>
                             </td>
-                            <td></td>
+                            <td>
+                                <?= $url['check_date'] ?>
+                            </td>
                             <td></td>
                         </tr>
                     <?php endforeach ?>

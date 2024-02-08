@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page analyzer</title>
+    <title>Анализатор страниц</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
 
@@ -61,8 +61,10 @@
     <?= $content ?>
     <footer class="border-top py-3 mt-5 flex-shrink-0">
         <div class="container-lg">
-            <div class="text-center">
-                <a href="https://hexlet.io/pages/about" target="_blank">Hexlet</a>
+            <div class="text-body-secondary mt-4 mt-md-auto">
+                ©
+                <a class="text-decoration-none text-body-secondary" href="https://github.com/pozys" target="_blank">pozys</a>,
+                <?php echo date('Y') ?>
             </div>
         </div>
     </footer>

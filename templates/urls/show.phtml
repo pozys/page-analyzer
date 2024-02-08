@@ -20,10 +20,30 @@
             </table>
         </div>
         <h2 class="mt-5 mb-3">Проверки</h2>
-        <form method="post" action="/urls/1/checks">
+        <form class="mb-3" method="post" action=<?= $checkPath ?>>
             <input type="submit" class="btn btn-primary" value="Запустить проверку">
         </form>
         <table class="table table-bordered table-hover" data-test="checks">
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <th>Код ответа</th>
+                    <th>h1</th>
+                    <th>title</th>
+                    <th>description</th>
+                    <th>Дата создания</th>
+                </tr>
+                <?php foreach ($checks as $check) : ?>
+                    <tr>
+                        <td><?= $check['id'] ?></td>
+                        <td><?= $check['code'] ?></td>
+                        <td class="text-break"><?= $check['h1'] ?></td>
+                        <td class="text-break"><?= $check['title'] ?></td>
+                        <td class="text-break"><?= $check['description'] ?></td>
+                        <td><?= $check['created_at'] ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
         </table>
     </div>
 </main>
