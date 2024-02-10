@@ -25,6 +25,6 @@ class Url
         $scheme = $data['scheme'] ?? '';
         $host = $data['host'] ?? '';
 
-        return "{$scheme}://{$host}";
+        return "$scheme://$host";
     }
 }

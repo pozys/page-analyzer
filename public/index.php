@@ -3,6 +3,7 @@
 use App\Database\Connection;
 use App\Models\Url;
 use App\Repositories\{UrlCheckRepository, UrlRepository};
+use App\Services\HttpService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -18,6 +19,11 @@ $container->set('renderer', function () {
 });
 
 $container->set('pdo', fn () => (new Connection())->get()->connect());
+
+$container->set('urlRepository', fn () => new UrlRepository($container->get('pdo')));
+$container->set('urlCheckRepository', fn () => new UrlCheckRepository($container->get('pdo')));
+
+$container->set('http', fn () => new HttpService());
 
 $container->set('flash', function () {
     $storage = [];
@@ -53,10 +59,12 @@ $app->get('/', function (Request $request, Response $response) {
     return $renderer->render($response, 'index.phtml', $params);
 })->setName('home');
 
-$app->get('/urls/{id:[0-9]+}', function (Request $request, Response $response, array $args) use ($router) {
-    $urlRepo = new UrlRepository($this->get('pdo'));
-
-    $url = $urlRepo->getUrlById($args['id']);
+$app->get('/urls/{id:[0-9]+}', function (
+    Request $request,
+    Response $response,
+    array $args
+) use ($router) {
+    $url = $this->get('urlRepository')->getUrlById($args['id']);
 
     if ($url === null) {
         $this->get('flash')->addMessage('warning', "Url with id {$args['id']} not found");
@@ -80,8 +88,7 @@ $app->get('/urls/{id:[0-9]+}', function (Request $request, Response $response, a
 })->setName('urls.show');
 
 $app->get('/urls', function (Request $request, Response $response) {
-    $repo = new UrlRepository($this->get('pdo'));
-    $urls = $repo->listUrls();
+    $urls = $this->get('urlRepository')->listUrls();
 
     $renderer = $this->get('renderer');
     $renderer->setLayout("layout.php");
@@ -104,10 +111,8 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
     }
 
     try {
-        $repo = new UrlRepository($this->get('pdo'));
-
         $name = Url::getName(parse_url($url['name']));
-        $id = $repo->firstByField('name', $name)['id'] ?? null;
+        $id = $this->get('urlRepository')->firstByField('name', $name)['id'] ?? null;
     } catch (\PDOException $e) {
         $this->get('flash')->addMessage('error', $e->getMessage());
 
@@ -117,7 +122,7 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
     $message = 'Страница уже существует';
 
     if ($id === null) {
-        $id = $repo->insertUrl($url);
+        $id = $this->get('urlRepository')->insertUrl($url);
         $message = 'Страница успешно добавлена';
     }
 
@@ -126,11 +131,27 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
     return $response->withRedirect($router->urlFor('urls.show', compact('id')));
 });
 
-$app->post('/urls/{url_id:[0-9]+}/checks', function (Request $request, Response $response, array $args) use ($router) {
-    try {
-        $repo = new UrlCheckRepository($this->get('pdo'));
+$app->post('/urls/{url_id:[0-9]+}/checks', function (
+    Request $request,
+    Response $response,
+    array $args
+) use ($router) {
+    $url = $this->get('urlRepository')->getUrlById($args['url_id']);
 
-        $repo->insertCheck($args['url_id']);
+    $httpResponse = $this->get('http')->checkUrl($url['name']);
+
+    if ($httpResponse === null) {
+        $this->get('flash')->addMessage('warning', 'Не удалось проверить сайт. Попробуйте позже');
+
+        return $response->withRedirect($router->urlFor('urls.show', ['id' => $args['url_id']]));
+    }
+
+    $check = [];
+    $check['url_id'] = $args['url_id'];
+    $check['status_code'] = $httpResponse['status_code'];
+
+    try {
+        $this->get('urlCheckRepository')->insertCheck($check);
 
         $this->get('flash')->addMessage('success', 'Страница успешно проверена');
     } catch (\PDOException $e) {

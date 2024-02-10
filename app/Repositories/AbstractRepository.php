@@ -36,9 +36,9 @@ abstract class AbstractRepository
 
     private function findByField(string $field, mixed $value): PDOStatement
     {
-        $sql = "SELECT * FROM {$this->getTableName()} WHERE $field = :{$field}";
+        $sql = "SELECT * FROM {$this->getTableName()} WHERE $field = :$field";
         $this->statement = $this->connection->prepare($sql);
-        $this->statement->bindValue(":{$field}", $value);
+        $this->statement->bindValue(":$field", $value);
         $this->statement->execute();
 
         return $this->statement;

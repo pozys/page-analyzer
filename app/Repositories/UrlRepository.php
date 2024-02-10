@@ -22,11 +22,14 @@ class UrlRepository extends AbstractRepository
         $checksTableAlias = $checksTable . '_alias';
         $checkDateColumn = 'check_date';
 
-        $sql = "SELECT {$urlTableAlias}.*,
-        {$checksTableAlias}.created_at AS $checkDateColumn
-        FROM $urlTable AS $urlTableAlias
-        LEFT JOIN $checksTable AS $checksTableAlias
-        ON {$urlTableAlias}.id = {$checksTableAlias}.url_id";
+        $sql = <<<SQL
+        SELECT $urlTableAlias.*,
+            $checksTableAlias.status_code,
+            $checksTableAlias.created_at AS $checkDateColumn
+        FROM
+            $urlTable AS $urlTableAlias
+            LEFT JOIN $checksTable AS $checksTableAlias ON $urlTableAlias.id = $checksTableAlias.url_id
+        SQL;
 
         $rows = $this->connection->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 

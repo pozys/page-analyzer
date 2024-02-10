@@ -20,12 +20,18 @@ class UrlCheckRepository extends AbstractRepository
         return Arr::sortDesc($checks, 'created_at');
     }
 
-    public function insertCheck(string $urlId): int
+    public function insertCheck(array $data): int
     {
-        $sql = "INSERT INTO {$this->getTableName()}(url_id, created_at) VALUES(:url_id, :date)";
+        $sql = <<<SQL
+        INSERT INTO {$this->getTableName()}(url_id, status_code, created_at)
+        VALUES
+            (:url_id, :status_code, :date)
+        SQL;
+
         $statement = $this->connection->prepare($sql);
 
-        $statement->bindValue(':url_id', $urlId);
+        $statement->bindValue(':url_id', $data['url_id']);
+        $statement->bindValue(':status_code', $data['status_code']);
         $statement->bindValue(':date', Carbon::now());
 
         $statement->execute();
