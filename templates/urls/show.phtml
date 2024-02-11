@@ -37,9 +37,9 @@
                     <tr>
                         <td><?= $check['id'] ?></td>
                         <td><?= $check['status_code'] ?></td>
-                        <td class="text-break"><?= $check['h1'] ?></td>
+                        <td class="text-break"><?= Illuminate\Support\Str::limit($check['h1'], 200) ?></td>
                         <td class="text-break"><?= $check['title'] ?></td>
-                        <td class="text-break"><?= $check['description'] ?></td>
+                        <td class="text-break"><?= Illuminate\Support\Str::limit($check['description'], 200) ?></td>
                         <td><?= $check['created_at'] ?></td>
                     </tr>
                 <?php endforeach; ?>

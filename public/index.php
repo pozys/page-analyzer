@@ -3,7 +3,7 @@
 use App\Database\Connection;
 use App\Models\Url;
 use App\Repositories\{UrlCheckRepository, UrlRepository};
-use App\Services\HttpService;
+use App\Services\{DiDomParser, GuzzleHttpService};
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -23,7 +23,9 @@ $container->set('pdo', fn () => (new Connection())->get()->connect());
 $container->set('urlRepository', fn () => new UrlRepository($container->get('pdo')));
 $container->set('urlCheckRepository', fn () => new UrlCheckRepository($container->get('pdo')));
 
-$container->set('http', fn () => new HttpService());
+$container->set('http', fn () => new GuzzleHttpService());
+
+$container->set('htmlParser', fn () => new DiDomParser());
 
 $container->set('flash', function () {
     $storage = [];
@@ -146,9 +148,14 @@ $app->post('/urls/{url_id:[0-9]+}/checks', function (
         return $response->withRedirect($router->urlFor('urls.show', ['id' => $args['url_id']]));
     }
 
+    $parsedPage = $this->get('htmlParser')->parseHtml($httpResponse['html']);
+
     $check = [];
     $check['url_id'] = $args['url_id'];
     $check['status_code'] = $httpResponse['status_code'];
+    $check['h1'] = $parsedPage['h1'] ?? '';
+    $check['title'] = $parsedPage['title'] ?? '';
+    $check['description'] = $parsedPage['content'];
 
     try {
         $this->get('urlCheckRepository')->insertCheck($check);

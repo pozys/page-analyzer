@@ -5,7 +5,7 @@ namespace App\Services;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\{ConnectException, TransferException};
 
-class HttpService
+class GuzzleHttpService
 {
     private Client $http;
 
@@ -24,8 +24,7 @@ class HttpService
 
         return [
             'status_code' => $response->getStatusCode(),
-            'headers' => $response->getHeaders(),
-            'body' => $response->getBody()->getContents(),
+            'html' => $response->getBody(),
         ];
     }
 }

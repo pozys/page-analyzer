@@ -23,15 +23,18 @@ class UrlCheckRepository extends AbstractRepository
     public function insertCheck(array $data): int
     {
         $sql = <<<SQL
-        INSERT INTO {$this->getTableName()}(url_id, status_code, created_at)
+        INSERT INTO {$this->getTableName()}(url_id, status_code, h1, title, description, created_at)
         VALUES
-            (:url_id, :status_code, :date)
+            (:url_id, :status_code, :h1, :title, :description, :date)
         SQL;
 
         $statement = $this->connection->prepare($sql);
 
         $statement->bindValue(':url_id', $data['url_id']);
         $statement->bindValue(':status_code', $data['status_code']);
+        $statement->bindValue(':h1', $data['h1'] ?? '');
+        $statement->bindValue(':title', $data['title'] ?? '');
+        $statement->bindValue(':description', $data['description'] ?? '');
         $statement->bindValue(':date', Carbon::now());
 
         $statement->execute();
