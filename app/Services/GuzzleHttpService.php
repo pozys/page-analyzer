@@ -24,7 +24,7 @@ class GuzzleHttpService
 
         return [
             'status_code' => $response->getStatusCode(),
-            'html' => $response->getBody(),
+            'html' => $response->getBody()->getContents(),
         ];
     }
 }

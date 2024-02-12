@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Database\Connection;
 use App\Models\Url;
 use App\Repositories\{UrlCheckRepository, UrlRepository};
@@ -19,6 +21,13 @@ $container->set('renderer', function () {
 });
 
 $container->set('pdo', fn () => (new Connection())->get()->connect());
+
+$container->set('validator', function () {
+    $validator = new Validator();
+    $validator->setPrependLabels(false);
+
+    return $validator;
+});
 
 $container->set('urlRepository', fn () => new UrlRepository($container->get('pdo')));
 $container->set('urlCheckRepository', fn () => new UrlCheckRepository($container->get('pdo')));
@@ -66,7 +75,7 @@ $app->get('/urls/{id:[0-9]+}', function (
     Response $response,
     array $args
 ) use ($router) {
-    $url = $this->get('urlRepository')->getUrlById($args['id']);
+    $url = $this->get('urlRepository')->getUrlById((int) $args['id']);
 
     if ($url === null) {
         $this->get('flash')->addMessage('warning', "Url with id {$args['id']} not found");
@@ -103,17 +112,18 @@ $app->get('/urls', function (Request $request, Response $response) {
 $app->post('/urls', function (Request $request, Response $response) use ($router) {
     $url = $request->getParsedBodyParam('url');
 
-    $validator = new Validator($url);
-    $validator->rules(Url::rules());
+    $validator = Url::setRules($this->get('validator'));
+    $validator = $validator->withData($url);
 
     if (!$validator->validate()) {
         $this->get('flash')->addMessage('validation', $validator->errors());
+        $this->get('flash')->addMessage('old', $url);
 
         return $response->withRedirect($router->urlFor('home'));
     }
 
+    $name = Url::getName(parse_url($url['name']));
     try {
-        $name = Url::getName(parse_url($url['name']));
         $id = $this->get('urlRepository')->firstByField('name', $name)['id'] ?? null;
     } catch (\PDOException $e) {
         $this->get('flash')->addMessage('error', $e->getMessage());
@@ -138,7 +148,7 @@ $app->post('/urls/{url_id:[0-9]+}/checks', function (
     Response $response,
     array $args
 ) use ($router) {
-    $url = $this->get('urlRepository')->getUrlById($args['url_id']);
+    $url = $this->get('urlRepository')->getUrlById((int) $args['url_id']);
 
     $httpResponse = $this->get('http')->checkUrl($url['name']);
 

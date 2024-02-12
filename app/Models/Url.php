@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Valitron\Validator;
+
 class Url
 {
     private const TABLE_NAME = 'urls';
@@ -11,13 +13,14 @@ class Url
         return self::TABLE_NAME;
     }
 
-    public static function rules(): array
+    public static function setRules(Validator $validator): Validator
     {
-        return [
-            'required' => ['name'],
-            'lengthMax' => [['name', 255]],
-            'url' => ['name'],
-        ];
+        $validator
+            ->rule('required', 'name')->message('URL не должен быть пустым')
+            ->rule('lengthMax', 'name', 255)->message('URL не должен быть длиннее 255 символов')
+            ->rule('url', 'name')->message('Некорректный URL');
+
+        return $validator;
     }
 
     public static function getName(array $data): string
