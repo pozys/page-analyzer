@@ -58,7 +58,7 @@
         </div>
     <?php endif; ?>
 
-    <?= $content ?>
+    <?= $content ?? '' ?>
     <footer class="border-top py-3 mt-5 flex-shrink-0">
         <div class="container-lg">
             <div class="text-body-secondary mt-4 mt-md-auto">

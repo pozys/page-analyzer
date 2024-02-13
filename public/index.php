@@ -63,6 +63,10 @@ $app->get('/', function (Request $request, Response $response) {
     $renderer = $this->get('renderer');
     $renderer->setLayout("layout.php");
 
+    $flash = $this->get('flash')->getMessages();
+
+    return $renderer->render($response, 'index.phtml', compact('flash'));
+
     return $renderer->render($response, 'index.phtml');
 })->setName('home');
 
@@ -127,7 +131,16 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
         return $renderer->render($response, 'index.phtml', $params);
     }
 
-    $name = Url::getName(parse_url($url['name']));
+    $urlParsed = parse_url($url['name']);
+
+    if ($urlParsed === false) {
+        $this->get('flash')->addMessage('error', 'Invalid URL');
+
+        return $response->withRedirect($router->urlFor('home'));
+    }
+
+    $name = Url::getName($urlParsed);
+
     try {
         $id = $this->get('urlRepository')->firstByField('name', $name)['id'] ?? null;
     } catch (\PDOException $e) {
