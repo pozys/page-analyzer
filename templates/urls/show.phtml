@@ -24,7 +24,7 @@
             <input type="submit" class="btn btn-primary" value="Запустить проверку">
         </form>
         <table class="table table-bordered table-hover" data-test="checks">
-            <tbody>
+            <thead>
                 <tr>
                     <th>ID</th>
                     <th>Код ответа</th>
@@ -33,6 +33,9 @@
                     <th>description</th>
                     <th>Дата создания</th>
                 </tr>
+            </thead>
+            <tbody>
+
                 <?php foreach ($checks as $check) : ?>
                     <tr>
                         <td><?= $check['id'] ?></td>
