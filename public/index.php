@@ -6,11 +6,11 @@ use App\Database\Connection;
 use App\Models\Url;
 use App\Repositories\{UrlCheckRepository, UrlRepository};
 use App\Services\{DiDomParser, GuzzleHttpService};
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use DI\Container;
 use Slim\Flash\Messages;
+use Slim\Http\Response;
+use Slim\Http\ServerRequest as Request;
 use Valitron\Validator;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -139,7 +139,13 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
     $message = 'Страница уже существует';
 
     if ($id === null) {
-        $id = $this->get('urlRepository')->insertUrl($url);
+        try {
+            $id = $this->get('urlRepository')->insertUrl($url);
+        } catch (\Throwable $th) {
+            $this->get('flash')->addMessage('error', $th->getMessage());
+
+            return $response->withRedirect($router->urlFor('home'));
+        }
         $message = 'Страница успешно добавлена';
     }
 

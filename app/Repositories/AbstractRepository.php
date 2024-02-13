@@ -24,9 +24,7 @@ abstract class AbstractRepository
 
     public function allByField(string $field, mixed $value): array
     {
-        $result = $this->findByField($field, $value)->fetchAll(PDO::FETCH_ASSOC);
-
-        return $result === false ? [] : $result;
+        return $this->findByField($field, $value)->fetchAll(PDO::FETCH_ASSOC);
     }
 
     protected function getTableName(): string

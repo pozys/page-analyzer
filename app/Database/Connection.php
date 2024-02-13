@@ -6,7 +6,7 @@ use PDO;
 
 class Connection
 {
-    private static $connection;
+    private static ?Connection $connection = null;
 
     public function connect(): PDO
     {
@@ -29,11 +29,11 @@ class Connection
 
     public static function get(): self
     {
-        if (null === static::$connection) {
-            static::$connection = new static();
+        if (null === self::$connection) {
+            self::$connection = new self();
         }
 
-        return static::$connection;
+        return self::$connection;
     }
 
     private function getParams(): array

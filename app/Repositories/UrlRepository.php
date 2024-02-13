@@ -47,6 +47,11 @@ class UrlRepository extends AbstractRepository
         $statement = $this->connection->prepare($sql);
 
         $urlParsed = parse_url($urlData['name']);
+
+        if ($urlParsed === false) {
+            throw new \Exception('Invalid URL');
+        }
+
         $name = Url::getName($urlParsed);
 
         $statement->bindValue(':name', $name);
