@@ -66,8 +66,6 @@ $app->get('/', function (Request $request, Response $response) {
     $flash = $this->get('flash')->getMessages();
 
     return $renderer->render($response, 'index.phtml', compact('flash'));
-
-    return $renderer->render($response, 'index.phtml');
 })->setName('home');
 
 $app->get('/urls/{id:[0-9]+}', function (
