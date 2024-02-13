@@ -6,11 +6,11 @@
                 <p class="lead">Бесплатно проверяйте сайты на SEO пригодность</p>
                 <form action="/urls" method="post" class="row" required="">
                     <div class="col-8">
-                        <input type="text" name="url[name]" value="<?= $flash['old'][0]['name'] ?? '' ?>" class="form-control form-control-lg <?= (array_key_exists('validation', $flash)) ? "is-invalid" : "" ?> " placeholder="https://www.example.com">
-                        <?php if (count(array_column($flash['validation'] ?? [], 'name')) > 0) : ?>
+                        <input type="text" name="url[name]" value="<?= $validation['old']['name'] ?? '' ?>" class="form-control form-control-lg <?= (isset($validation)) ? "is-invalid" : "" ?> " placeholder="https://www.example.com">
+                        <?php if (count($validation['errors']['name'] ?? []) > 0) : ?>
                             <div class="invalid-feedback">
-                                <?php foreach (array_column($flash['validation'], 'name') as $messages) {
-                                    echo implode('<br>', $messages);
+                                <?php foreach ($validation['errors']['name'] as $messages) {
+                                    echo $messages . '<br>';
                                 } ?>
                             </div>
                         <?php endif; ?>

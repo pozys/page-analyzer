@@ -63,11 +63,7 @@ $app->get('/', function (Request $request, Response $response) {
     $renderer = $this->get('renderer');
     $renderer->setLayout("layout.php");
 
-    $flash = $this->get('flash')->getMessages();
-
-    $params = compact('flash');
-
-    return $renderer->render($response, 'index.phtml', $params);
+    return $renderer->render($response, 'index.phtml');
 })->setName('home');
 
 $app->get('/urls/{id:[0-9]+}', function (
@@ -116,10 +112,19 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
     $validator = $validator->withData($url);
 
     if (!$validator->validate()) {
-        $this->get('flash')->addMessage('validation', $validator->errors());
-        $this->get('flash')->addMessage('old', $url);
+        $validation = [
+            'errors' => $validator->errors(),
+            'old' => $url,
+        ];
 
-        return $response->withRedirect($router->urlFor('home'));
+        $response = $response->withStatus(422);
+
+        $params = compact('validation');
+
+        $renderer = $this->get('renderer');
+        $renderer->setLayout("layout.php");
+
+        return $renderer->render($response, 'index.phtml', $params);
     }
 
     $name = Url::getName(parse_url($url['name']));
