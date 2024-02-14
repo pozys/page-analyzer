@@ -8,6 +8,7 @@ use Pozys\PageAnalyzer\Repositories\{UrlCheckRepository, UrlRepository};
 use Pozys\PageAnalyzer\Services\{DiDomParser, GuzzleHttpService};
 use Slim\Factory\AppFactory;
 use DI\Container;
+use Pozys\PageAnalyzer\Controllers\HomeController;
 use Slim\Flash\Messages;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
@@ -59,14 +60,7 @@ $app->addErrorMiddleware(true, true, true);
 
 $router = $app->getRouteCollector()->getRouteParser();
 
-$app->get('/', function (Request $request, Response $response) {
-    $renderer = $this->get('renderer');
-    $renderer->setLayout("layout.php");
-
-    $flash = $this->get('flash')->getMessages();
-
-    return $renderer->render($response, 'index.phtml', compact('flash'));
-})->setName('home');
+$app->get('/', HomeController::class)->setName('home');
 
 $app->get('/urls/{id:[0-9]+}', function (
     Request $request,
