@@ -8,7 +8,7 @@ use Pozys\PageAnalyzer\Repositories\{UrlCheckRepository, UrlRepository};
 use Pozys\PageAnalyzer\Services\{DiDomParser, GuzzleHttpService};
 use Slim\Factory\AppFactory;
 use DI\Container;
-use Pozys\PageAnalyzer\Controllers\HomeController;
+use Pozys\PageAnalyzer\Controllers\{HomeController, UrlCheckController};
 use Slim\Flash\Messages;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
@@ -59,6 +59,8 @@ $app->add(
 $app->addErrorMiddleware(true, true, true);
 
 $router = $app->getRouteCollector()->getRouteParser();
+
+$container->set('router', $router);
 
 $app->get('/', HomeController::class)->setName('home');
 
@@ -159,39 +161,7 @@ $app->post('/urls', function (Request $request, Response $response) use ($router
     return $response->withRedirect($router->urlFor('urls.show', compact('id')));
 });
 
-$app->post('/urls/{url_id:[0-9]+}/checks', function (
-    Request $request,
-    Response $response,
-    array $args
-) use ($router) {
-    $url = $this->get('urlRepository')->getUrlById((int) $args['url_id']);
-
-    $httpResponse = $this->get('http')->checkUrl($url['name']);
-
-    if ($httpResponse === null) {
-        $this->get('flash')->addMessage('warning', 'Не удалось проверить сайт. Попробуйте позже');
-
-        return $response->withRedirect($router->urlFor('urls.show', ['id' => $args['url_id']]));
-    }
-
-    $parsedPage = $this->get('htmlParser')->parseHtml($httpResponse['html']);
-
-    $check = [];
-    $check['url_id'] = $args['url_id'];
-    $check['status_code'] = $httpResponse['status_code'];
-    $check['h1'] = $parsedPage['h1'] ?? '';
-    $check['title'] = $parsedPage['title'] ?? '';
-    $check['description'] = $parsedPage['content'];
-
-    try {
-        $this->get('urlCheckRepository')->insertCheck($check);
-
-        $this->get('flash')->addMessage('success', 'Страница успешно проверена');
-    } catch (\PDOException $e) {
-        $this->get('flash')->addMessage('error', $e->getMessage());
-    }
-
-    return $response->withRedirect($router->urlFor('urls.show', ['id' => $args['url_id']]));
-})->setName('urls.checks');
+$app->post('/urls/{url_id:[0-9]+}/checks', [UrlCheckController::class, 'checkUrl'])
+    ->setName('urls.checks');
 
 $app->run();

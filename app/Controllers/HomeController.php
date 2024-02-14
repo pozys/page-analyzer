@@ -14,7 +14,7 @@ class HomeController
     {
     }
 
-    public function __invoke(Request $request, Response $response, array $args): Response
+    public function __invoke(Request $request, Response $response): Response
     {
         $renderer = $this->container->get('renderer');
         $renderer->setLayout("layout.php");
