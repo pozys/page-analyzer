@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Repositories;
+namespace  Pozys\PageAnalyzer\Repositories;
 
-use App\Models\UrlCheck;
+use Pozys\PageAnalyzer\Models\UrlCheck;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 

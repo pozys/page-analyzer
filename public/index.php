@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Database\Connection;
-use App\Models\Url;
-use App\Repositories\{UrlCheckRepository, UrlRepository};
-use App\Services\{DiDomParser, GuzzleHttpService};
+use Pozys\PageAnalyzer\Database\Connection;
+use Pozys\PageAnalyzer\Models\Url;
+use Pozys\PageAnalyzer\Repositories\{UrlCheckRepository, UrlRepository};
+use Pozys\PageAnalyzer\Services\{DiDomParser, GuzzleHttpService};
 use Slim\Factory\AppFactory;
 use DI\Container;
 use Slim\Flash\Messages;

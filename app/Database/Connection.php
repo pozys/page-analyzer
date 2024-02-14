@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Database;
+namespace  Pozys\PageAnalyzer\Database;
 
 use PDO;
 

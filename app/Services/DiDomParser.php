@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace  Pozys\PageAnalyzer\Services;
 
 use DiDom\Document;
 

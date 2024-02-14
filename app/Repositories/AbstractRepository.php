@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories;
+namespace  Pozys\PageAnalyzer\Repositories;
 
 use PDO;
 use PDOStatement;

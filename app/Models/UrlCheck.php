@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace  Pozys\PageAnalyzer\Models;
 
 class UrlCheck
 {

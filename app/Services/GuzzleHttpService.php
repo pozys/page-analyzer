@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace  Pozys\PageAnalyzer\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\{ConnectException, TransferException};
