@@ -2,15 +2,14 @@
 
 namespace  Pozys\PageAnalyzer\Repositories;
 
-use Pozys\PageAnalyzer\Models\UrlCheck;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 
 class UrlCheckRepository extends AbstractRepository
 {
-    public function model(): string
+    public static function getTableName(): string
     {
-        return UrlCheck::class;
+        return 'url_checks';
     }
 
     public function checksByUrl(int $urlId): array
@@ -22,8 +21,10 @@ class UrlCheckRepository extends AbstractRepository
 
     public function insertCheck(array $data): int
     {
+        $table = static::getTableName();
+
         $sql = <<<SQL
-        INSERT INTO {$this->getTableName()}(url_id, status_code, h1, title, description, created_at)
+        INSERT INTO {$table}(url_id, status_code, h1, title, description, created_at)
         VALUES
             (:url_id, :status_code, :h1, :title, :description, :date)
         SQL;

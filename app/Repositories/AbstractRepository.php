@@ -13,7 +13,7 @@ abstract class AbstractRepository
     {
     }
 
-    abstract public function model(): string;
+    abstract public static function getTableName(): string;
 
     public function firstByField(string $field, mixed $value): ?array
     {
@@ -27,14 +27,10 @@ abstract class AbstractRepository
         return $this->findByField($field, $value)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    protected function getTableName(): string
-    {
-        return $this->model()::getTableName();
-    }
-
     private function findByField(string $field, mixed $value): PDOStatement
     {
-        $sql = "SELECT * FROM {$this->getTableName()} WHERE $field = :$field";
+        $table = static::getTableName();
+        $sql = "SELECT * FROM $table WHERE $field = :$field";
         $this->statement = $this->connection->prepare($sql);
         $this->statement->bindValue(":$field", $value);
         $this->statement->execute();

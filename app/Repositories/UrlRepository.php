@@ -2,23 +2,23 @@
 
 namespace  Pozys\PageAnalyzer\Repositories;
 
-use Pozys\PageAnalyzer\Models\{Url, UrlCheck};
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use PDO;
+use Pozys\PageAnalyzer\Services\UrlService;
 
 class UrlRepository extends AbstractRepository
 {
-    public function model(): string
+    public static function getTableName(): string
     {
-        return Url::class;
+        return 'urls';
     }
 
     public function listUrls(): array
     {
-        $urlTable = $this->getTableName();
+        $urlTable = static::getTableName();
         $urlTableAlias = $urlTable . '_alias';
-        $checksTable = UrlCheck::getTableName();
+        $checksTable = UrlCheckRepository::getTableName();
         $checksTableAlias = $checksTable . '_alias';
         $checkDateColumn = 'check_date';
 
@@ -43,7 +43,8 @@ class UrlRepository extends AbstractRepository
 
     public function insertUrl(array $urlData): int
     {
-        $sql = "INSERT INTO {$this->getTableName()}(name, created_at) VALUES(:name, :date)";
+        $table = static::getTableName();
+        $sql = "INSERT INTO $table(name, created_at) VALUES(:name, :date)";
         $statement = $this->connection->prepare($sql);
 
         $urlParsed = parse_url($urlData['name']);
@@ -52,7 +53,7 @@ class UrlRepository extends AbstractRepository
             throw new \Exception('Invalid URL');
         }
 
-        $name = Url::getName($urlParsed);
+        $name = UrlService::getName($urlParsed);
 
         $statement->bindValue(':name', $name);
         $statement->bindValue(':date', Carbon::now());
