@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace  Pozys\PageAnalyzer\Repositories;
 
 use Carbon\Carbon;
@@ -19,7 +21,7 @@ class UrlCheckRepository extends AbstractRepository
         return Arr::sortDesc($checks, 'created_at');
     }
 
-    public function insertCheck(array $data): int
+    public function insertCheck(array $data): string
     {
         $table = static::getTableName();
 

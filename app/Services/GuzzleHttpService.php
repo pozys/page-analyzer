@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace  Pozys\PageAnalyzer\Services;
 
 use GuzzleHttp\Client;

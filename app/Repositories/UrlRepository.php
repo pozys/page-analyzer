@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace  Pozys\PageAnalyzer\Repositories;
 
 use Carbon\Carbon;
@@ -41,7 +43,7 @@ class UrlRepository extends AbstractRepository
             ->all();
     }
 
-    public function insertUrl(array $urlData): int
+    public function insertUrl(array $urlData): string
     {
         $table = static::getTableName();
         $sql = "INSERT INTO $table(name, created_at) VALUES(:name, :date)";
