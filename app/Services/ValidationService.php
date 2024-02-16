@@ -14,6 +14,7 @@ class ValidationService
     {
         $validator = new Validator($data);
         $validator->setPrependLabels(false);
+        $validator->stopOnFirstFail();
         $this->validator = $validator;
     }
 
